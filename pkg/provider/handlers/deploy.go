@@ -149,6 +149,8 @@ func deploy(ctx context.Context, req types.FunctionDeployment, client *container
 		containerd.WithNewSpec(oci.WithImageConfig(image),
 			oci.WithHostname(name),
 			oci.WithCapabilities([]string{"CAP_NET_RAW"}),
+			oci.WithLinuxDevice("/dev/kvm", "rmw"),
+			oci.WithAnnotations(map[string]string{"run.oci.handler": "krun"}),
 			oci.WithMounts(mounts),
 			oci.WithEnv(envs),
 			withMemory(memory)),
