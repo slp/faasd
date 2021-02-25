@@ -153,7 +153,8 @@ func deploy(ctx context.Context, req types.FunctionDeployment, client *container
 			oci.WithAnnotations(map[string]string{"run.oci.handler": "krun"}),
 			oci.WithMounts(mounts),
 			oci.WithEnv(envs),
-			withMemory(memory)),
+			withMemory(memory),
+			withRlimits()),
 		containerd.WithContainerLabels(labels),
 	)
 
@@ -289,6 +290,19 @@ func withMemory(mem *specs.LinuxMemory) oci.SpecOpts {
 				s.Linux.Resources.Memory = &specs.LinuxMemory{}
 			}
 			s.Linux.Resources.Memory.Limit = mem.Limit
+		}
+		return nil
+	}
+}
+
+func withRlimits() oci.SpecOpts {
+	return func(ctx context.Context, _ oci.Client, c *containers.Container, s *oci.Spec) error {
+		s.Process.Rlimits = []specs.POSIXRlimit {
+			{
+				Type: "RLIMIT_NOFILE",
+				Hard: uint64(524288),
+				Soft: uint64(524288),
+			},
 		}
 		return nil
 	}
